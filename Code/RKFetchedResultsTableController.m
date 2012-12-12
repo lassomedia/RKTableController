@@ -25,7 +25,6 @@
 #import "RKEntityMapping.h"
 #import "RKLog.h"
 #import "RKManagedObjectRequestOperation.h"
-#import "NSEntityDescription+RKAdditions.h"
 #import "RKObjectManager.h"
 
 // Define logging component
@@ -464,39 +463,40 @@ static BOOL RKShouldReloadRowForManagedObjectWithCellMapping(NSManagedObject *ma
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSAssert(tableView == self.tableView, @"tableView:commitEditingStyle:forRowAtIndexPath: invoked with inappropriate tableView: %@", tableView);
-    if (self.canEditRows && editingStyle == UITableViewCellEditingStyleDelete) {
-        NSManagedObject *managedObject = [self objectForRowAtIndexPath:indexPath];
-
-        NSString *primaryKeyAttributeName = managedObject.entity.primaryKeyAttributeName;
-        if ([managedObject valueForKeyPath:primaryKeyAttributeName]) {
-            // TODO: This should probably be done via delegation. We are coupled to the shared manager.
-            RKLogTrace(@"About to fire a delete request for managedObject: %@", managedObject);
-            [[RKObjectManager sharedManager] deleteObject:managedObject path:nil parameters:nil success:^(RKObjectRequestOperation *operation, RKMappingResult *mappingResult) {
-                if ([self.delegate respondsToSelector:@selector(tableController:didDeleteObject:atIndexPath:)]) {
-                    [self.delegate tableController:self didDeleteObject:managedObject atIndexPath:indexPath];
-                }
-            } failure:^(RKObjectRequestOperation *operation, NSError *error) {
-                RKLogError(@"Failed to delete managed object deleted by table controller. Error: %@", error);
-            }];
-        } else {
-            RKLogTrace(@"About to locally delete managedObject: %@", managedObject);
-            NSManagedObjectContext *managedObjectContext = managedObject.managedObjectContext;
-            [managedObjectContext performBlock:^{
-                [managedObjectContext deleteObject:managedObject];
-                
-                NSError *error = nil;
-                [managedObjectContext save:&error];
-                if (error) {
-                    RKLogError(@"Failed to save managedObjectContext after a delete with error: %@", error);
-                } else {
-                    if ([self.delegate respondsToSelector:@selector(tableController:didDeleteObject:atIndexPath:)]) {
-                        [self.delegate tableController:self didDeleteObject:managedObject atIndexPath:indexPath];
-                    }
-                }
-            }];
-        }
-    }
+#warning - Delete not supported.  Relies on an deleted NSEntityDescription category.
+//    NSAssert(tableView == self.tableView, @"tableView:commitEditingStyle:forRowAtIndexPath: invoked with inappropriate tableView: %@", tableView);
+//    if (self.canEditRows && editingStyle == UITableViewCellEditingStyleDelete) {
+//        NSManagedObject *managedObject = [self objectForRowAtIndexPath:indexPath];
+//
+//        NSString *primaryKeyAttributeName = managedObject.entity.primaryKeyAttributeName;
+//        if ([managedObject valueForKeyPath:primaryKeyAttributeName]) {
+//            // TODO: This should probably be done via delegation. We are coupled to the shared manager.
+//            RKLogTrace(@"About to fire a delete request for managedObject: %@", managedObject);
+//            [[RKObjectManager sharedManager] deleteObject:managedObject path:nil parameters:nil success:^(RKObjectRequestOperation *operation, RKMappingResult *mappingResult) {
+//                if ([self.delegate respondsToSelector:@selector(tableController:didDeleteObject:atIndexPath:)]) {
+//                    [self.delegate tableController:self didDeleteObject:managedObject atIndexPath:indexPath];
+//                }
+//            } failure:^(RKObjectRequestOperation *operation, NSError *error) {
+//                RKLogError(@"Failed to delete managed object deleted by table controller. Error: %@", error);
+//            }];
+//        } else {
+//            RKLogTrace(@"About to locally delete managedObject: %@", managedObject);
+//            NSManagedObjectContext *managedObjectContext = managedObject.managedObjectContext;
+//            [managedObjectContext performBlock:^{
+//                [managedObjectContext deleteObject:managedObject];
+//                
+//                NSError *error = nil;
+//                [managedObjectContext save:&error];
+//                if (error) {
+//                    RKLogError(@"Failed to save managedObjectContext after a delete with error: %@", error);
+//                } else {
+//                    if ([self.delegate respondsToSelector:@selector(tableController:didDeleteObject:atIndexPath:)]) {
+//                        [self.delegate tableController:self didDeleteObject:managedObject atIndexPath:indexPath];
+//                    }
+//                }
+//            }];
+//        }
+//    }
 }
 
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destIndexPath
@@ -581,6 +581,24 @@ static BOOL RKShouldReloadRowForManagedObjectWithCellMapping(NSManagedObject *ma
 {
     if (self.onScrollViewDidEndDecelerating) self.onScrollViewDidEndDecelerating(scrollView);
 }
+
+- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset
+{
+	if ([self.delegate respondsToSelector:@selector(scrollViewWillEndDragging:withVelocity:targetContentOffset:)]) {
+		[(id)self.delegate scrollViewWillEndDragging:scrollView withVelocity:velocity targetContentOffset:targetContentOffset];
+	}
+}
+
+- (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView;
+{
+	if ([self.delegate respondsToSelector:@selector(scrollViewShouldScrollToTop:)]) {
+		return [(id)self.delegate scrollViewShouldScrollToTop:scrollView];
+	}
+	else {
+		return [super scrollViewShouldScrollToTop:scrollView];
+	}
+}
+
 
 #pragma mark - Cell Mappings
 
