@@ -463,7 +463,7 @@ static BOOL RKShouldReloadRowForManagedObjectWithCellMapping(NSManagedObject *ma
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
 {
-//FIXIT: Delete not supported.  Relies on an deleted NSEntityDescription category.
+#warning FIXIT: Delete not supported.  Relies on an deleted NSEntityDescription category.
 //    NSAssert(tableView == self.tableView, @"tableView:commitEditingStyle:forRowAtIndexPath: invoked with inappropriate tableView: %@", tableView);
 //    if (self.canEditRows && editingStyle == UITableViewCellEditingStyleDelete) {
 //        NSManagedObject *managedObject = [self objectForRowAtIndexPath:indexPath];
