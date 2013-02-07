@@ -49,8 +49,6 @@ NSString * const RKTableControllerDidLoadErrorNotification = @"RKTableController
 NSString * const RKTableControllerDidBecomeOnline = @"RKTableControllerDidBecomeOnline";
 NSString * const RKTableControllerDidBecomeOffline = @"RKTableControllerDidBecomeOffline";
 
-static NSString *lastUpdatedDateDictionaryKey = @"lastUpdatedDateDictionaryKey";
-
 static inline NSString * RKStringFromBool(BOOL boolValue) { return boolValue ? @"YES" : @"NO"; }
 
 NSString * RKStringFromTableControllerState(RKTableControllerState state)
